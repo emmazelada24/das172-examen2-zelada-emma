@@ -1,76 +1,74 @@
 # AeroCargo-Matrix
 
-Solucion modular en Python para auditar la distribucion de carga en la bahia de una aeronave.
+Programa desarrollado en Python para revisar la distribución de carga en la bodega de una aeronave mediante el uso de matrices y funciones.
 
-## Objetivo
+## Descripción del problema
 
-El piso de carga se representa mediante dos matrices `N x M`: una contiene los pesos reales y otra las capacidades maximas por compartimiento. El programa valida los datos, calcula la ocupacion porcentual, identifica sobrecargas locales, analiza la distribucion longitudinal, verifica la simetria lateral y extrae la region contigua con mayor promedio de ocupacion.
+En una aeronave es importante distribuir correctamente la carga para evitar que una zona del piso supere su capacidad máxima y para mantener un balance entre el lado izquierdo y el derecho.
 
-## Importancia aeronautica
+Para representar la bodega se utilizan dos matrices:
 
-La capacidad limite de cada zona del piso debe respetarse para evitar concentraciones de carga que puedan comprometer la estructura. Ademas, una diferencia excesiva entre babor y estribor produce una distribucion lateral asimetrica. Este programa funciona como una auditoria inicial de una distribucion propuesta; no reemplaza los procedimientos certificados de peso y balance ni calcula el centro de gravedad de una aeronave real.
+- Una matriz con los pesos colocados.
+- Una matriz con las capacidades máximas.
 
-## Arquitectura modular
+El programa calcula el porcentaje de ocupación de cada posición, identifica las zonas sobrecargadas, calcula el peso de cada fila y revisa el balance lateral.
+
+También permite encontrar una zona crítica utilizando una submatriz de tamaño definido.
+
+## Funciones del programa
+
+El programa se divide en cuatro funciones principales:
+
+- `validar_matrices()`: comprueba que las matrices tengan las dimensiones y valores correctos.
+- `calcular_ocupacion()`: calcula los porcentajes y encuentra las posiciones sobrecargadas.
+- `evaluar_balance()`: calcula el peso por fila y compara el lado izquierdo con el derecho.
+- `extraer_submatriz_critica()`: busca la zona con mayor promedio de ocupación.
+
+## Arquitectura
 
 ```mermaid
 flowchart TD
-    A[main.py: datos de prueba] --> B[validar_matrices]
-    B -->|validos| C[calcular_ocupacion]
-    B -->|validos| D[evaluar_balance]
-    C --> E[extraer_submatriz_critica]
-    C --> F[porcentajes y sobrecargas]
-    D --> G[pesos por fila y balance]
-    E --> H[zona critica]
+    A[Datos en main.py] --> B[Validar matrices]
+    B --> C[Calcular ocupación]
+    B --> D[Evaluar balance]
+    C --> E[Buscar zona crítica]
+    C --> F[Mostrar resultados]
+    D --> F
+    E --> F
 ```
 
-Las funciones de `aerocargo.py` reciben todos sus datos como parametros, no utilizan variables globales y no modifican las matrices originales.
+El archivo `main.py` contiene los datos de prueba y muestra los resultados.
 
-## Contratos de las funciones
+El archivo `aerocargo.py` contiene las funciones utilizadas para realizar los cálculos.
 
-- `validar_matrices(cargas, capacidades) -> bool`: comprueba matrices regulares del mismo tamano, minimo `2 x 2`, pesos no negativos y capacidades positivas.
-- `calcular_ocupacion(cargas, capacidades) -> (matriz, lista)`: crea la matriz porcentual y devuelve coordenadas `(fila, columna)` cuyo porcentaje es mayor que 100.
-- `evaluar_balance(cargas, tolerancia) -> (lista, numero, bool)`: devuelve peso total por fila, desbalance lateral absoluto y aprobacion. Si hay columnas impares, omite la central.
-- `extraer_submatriz_critica(porcentajes, k, p) -> matriz`: devuelve la ventana contigua `k x p` con mayor promedio. En un empate conserva la primera encontrada.
+El archivo `test_aerocargo.py` contiene las pruebas para comprobar el funcionamiento.
 
-## Complejidad computacional
+## Complejidad
 
-Para una matriz de `N x M`, validacion, ocupacion y balance recorren cada celda una vez: tiempo `O(N x M)`. La nueva matriz de porcentajes utiliza memoria `O(N x M)`; los demas resultados ocupan como maximo ese mismo orden.
+Para validar las matrices, calcular la ocupación y evaluar el balance se deben recorrer sus filas y columnas.
 
-La busqueda directa evalua `(N-k+1)(M-p+1)` ventanas y recorre `k x p` valores por ventana, por lo que su cota general es `O((N-k+1)(M-p+1)kp)`. Si `k` y `p` son constantes pequenas, su comportamiento respecto de `N` y `M` se simplifica a `O(N x M)`. Esta precision evita afirmar incorrectamente que cualquier tamano variable de ventana siempre cuesta solo `O(N x M)`.
+Si la matriz tiene `N` filas y `M` columnas, el tiempo utilizado es:
 
-## Requisitos y ejecucion
+`O(N x M)`
 
-Solo requiere Python 3; no utiliza paquetes externos.
+La matriz de porcentajes tiene las mismas dimensiones, por lo que la memoria utilizada también es:
+
+`O(N x M)`
+
+La búsqueda de la submatriz requiere recorridos adicionales dependiendo del tamaño de la ventana seleccionada.
+
+## Ejecución
+
+Para ejecutar el programa:
 
 ```bash
-python main.py
+py main.py
 ```
 
 Para ejecutar las pruebas:
 
 ```bash
-python -m unittest -v
-```
-
-## Casos limite contemplados
-
-- Matriz minima `2 x 2` y pesos iguales a cero.
-- Matrices irregulares o de dimensiones distintas.
-- Pesos negativos y capacidades menores o iguales a cero.
-- Columnas pares e impares.
-- Porcentaje exactamente igual a 100, que no cuenta como sobrecarga.
-- Ventana igual a toda la matriz o mayor que ella.
-- Tolerancia cero o positiva; las tolerancias negativas se rechazan.
-
-## Estructura
-
-```text
-das172-examen2-zelada-emma/
-|-- aerocargo.py
-|-- main.py
-|-- test_aerocargo.py
-|-- README.md
-`-- .gitignore
+py -m unittest -v
 ```
 
 ## Autor
